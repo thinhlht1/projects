@@ -495,7 +495,35 @@ def loadMetadata(fileName):
     return expectDict
     
 def badRequest(errorMessage):
-    return HttpResponseBadRequest('<h1>{}</h1>'.format(errorMessage))
+    template = '''
+    <html>
+    <body>
+
+    <h1>{}.</h1>
+
+    <form action="/sayHello/" method="post">{% csrf_token %}
+        <input type="text" name="content"/>
+        <input type="submit" name="Add"/>
+    </form>
+
+    </body>
+    </html>
+    '''.format(errorMessage)
+    return HttpResponseBadRequest(template)
 
 def resourceNotFound(errorMessage):
-    return HttpResponseNotFound('<h1>{}</h1>'.format(errorMessage))
+    template = '''
+    <html>
+    <body>
+
+    <h1>{}.</h1>
+
+    <form action="/sayHello/" method="post">{% csrf_token %}
+        <input type="text" name="content"/>
+        <input type="submit" name="Add"/>
+    </form>
+
+    </body>
+    </html>
+    '''.format(errorMessage)
+    return HttpResponseNotFound(template)

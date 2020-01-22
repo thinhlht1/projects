@@ -9,9 +9,9 @@ import glob
 import os
 import re
 
-path = "storage/"
+path = os.path.join(BASE_DIR, "storage")
 
-metadata = "metadata/"
+metadata = os.path.join(BASE_DIR, "metadata")
 
 keyTime = {}
 keyExpire = {}

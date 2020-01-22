@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
+from django.contrib import messages
 from datetime import datetime, timedelta
 from .models import TodoItem
 import json
@@ -49,12 +50,13 @@ def myView(request):
             keyExist = checkIfKeyExistInRAM(key, keyTime)
 
             if keyExist == False:
-                mess = "key does not exist"
-            else:
-                name = path + '{}.txt'.format(key)
-                val = open(name)
-                mess = "".join(val.readlines())
-                val.close()
+                mess = "key not found"
+                return resourceNotFound(mess)
+            
+            name = path + '{}.txt'.format(key)
+            val = open(name)
+            mess = "".join(val.readlines())
+            val.close()
 
             context = {
                 'message': mess,
@@ -66,13 +68,14 @@ def myView(request):
             key = params[1]
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             if keyExist == False:
-                mess = 'key does not exist'
-            else:
-                val = open(path + '{}.txt'.format(key))
-                data = val.read()
-                lst = data.split(" ")
-                mess = len(lst)
-                val.close()
+                mess = 'key not found'
+                return resourceNotFound(mess)
+                
+            val = open(path + '{}.txt'.format(key))
+            data = val.read()
+            lst = data.split(" ")
+            mess = len(lst)
+            val.close()
 
             context = {
                 'message': mess,
@@ -112,24 +115,25 @@ def myView(request):
             key = params[1]
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             if keyExist == False:
-                mess = "key does not exist"
-            else:
-                name = path + "{}.txt".format(key)
-                fh = open(name, 'r+')
-                data = fh.readlines()
-                fh.close()
+                mess = "key not found"
+                return resourceNotFound(mess)
 
-                data = "".join(data)
-                lst = data.split(" ")
-                mess = lst.pop(0)
-                f = open(name, 'w+')    
-                keyTime[key] = time #                           
-                f.write(" ".join(lst))
-                f.close()
+            name = path + "{}.txt".format(key)
+            fh = open(name, 'r+')
+            data = fh.readlines()
+            fh.close()
 
-                if len(lst) == 0:
-                    os.remove(name)       
-                    del keyTime[key]                            
+            data = "".join(data)
+            lst = data.split(" ")
+            mess = lst.pop(0)
+            f = open(name, 'w+')    
+            keyTime[key] = time                          
+            f.write(" ".join(lst))
+            f.close()
+
+            if len(lst) == 0:
+                os.remove(name)       
+                del keyTime[key]                            
 
             context = {
                 'message': mess,
@@ -141,25 +145,26 @@ def myView(request):
             key = params[1]
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             if keyExist == False:
-                mess = "key does not exist"
-            else:
-                name = path + "{}.txt".format(key)
-                fh = open(name, 'r+')
-                data = fh.readlines()
-                fh.close()
+                mess = "key not found"
+                return resourceNotFound( mess)
+            
+            name = path + "{}.txt".format(key)
+            fh = open(name, 'r+')
+            data = fh.readlines()
+            fh.close()
 
-                data = "".join(data)
-                lst = data.split(" ")
-                mess = lst.pop()
+            data = "".join(data)
+            lst = data.split(" ")
+            mess = lst.pop()
 
-                f = open(name, 'w+')                               
-                f.write(" ".join(lst))
-                keyTime[key] = time
-                f.close()
+            f = open(name, 'w+')                               
+            f.write(" ".join(lst))
+            keyTime[key] = time
+            f.close()
 
-                if len(lst) == 0:
-                    os.remove(name)      
-                    del keyTime[key]                          
+            if len(lst) == 0:
+                os.remove(name)      
+                del keyTime[key]                          
 
             context = {
                 'message': mess,
@@ -172,22 +177,20 @@ def myView(request):
             start, stop = int(params[2]), int(params[3])
             if start > stop or start < 0 or stop < 0:
                 mess = "invalid parameters"
-                context = {
-                    'message': mess,
-                }
-                return render(request, 'get.html', context)
+                return badRequest(mess)
 
             keyExist = checkIfKeyExistInRAM(key, keyTime)
 
             if keyExist == False:
-                mess = "key does not exist"
-            else:
-                val = open(path + '{}.txt'.format(key))
-                data = val.read()
-                lst = data.split(" ")
-                mess = lst[start:stop]
-                mess = " ".join(mess)
-                val.close()
+                mess = "key not found"
+                return resourceNotFound(mess)
+            
+            val = open(path + '{}.txt'.format(key))
+            data = val.read()
+            lst = data.split(" ")
+            mess = lst[start:stop]
+            mess = " ".join(mess)
+            val.close()
 
             context = {
                 'message': mess,
@@ -234,12 +237,13 @@ def myView(request):
             key = params[1]
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             if keyExist == False:
-                mess = 'key does not exist'
-            else:                            
-                name = path + "{}.txt".format(key)
-                fh = open(name, 'r+')
-                mess = len(fh.read().split(" "))
-                fh.close()
+                mess = 'key not found'
+                return resourceNotFound(mess)
+                        
+            name = path + "{}.txt".format(key)
+            fh = open(name, 'r+')
+            mess = len(fh.read().split(" "))
+            fh.close()
 
             context = {
                 'message': mess,
@@ -251,12 +255,13 @@ def myView(request):
             key = params[1]
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             if keyExist == False:
-                mess = 'key does not exist'
-            else:                            
-                name = path + "{}.txt".format(key)
-                fh = open(name, 'r+')
-                mess = set(fh.read().split(" "))
-                fh.close()
+                mess = 'key not found'
+                return resourceNotFound(mess)
+                                      
+            name = path + "{}.txt".format(key)
+            fh = open(name, 'r+')
+            mess = set(fh.read().split(" "))
+            fh.close()
 
             context = {
                 'message': mess,
@@ -269,29 +274,30 @@ def myView(request):
             removeEles = params[2:]
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             if keyExist == False:
-                mess = 'key does not exist'
-            else:                            
-                name = path + "{}.txt".format(key)
-                fh = open(name, 'r+')
-                data = set(fh.read().split(" "))
-                fh.close()
+                mess = 'key not found'
+                return resourceNotFound(mess)
+                                   
+            name = path + "{}.txt".format(key)
+            fh = open(name, 'r+')
+            data = set(fh.read().split(" "))
+            fh.close()
 
-                mess = "{} removed from set".format(removeEles)
-                for ele in removeEles:
-                    if ele not in data:
-                        mess = "{} does not exist".format(ele)
-                        break
-                    else:
-                        data.remove(ele)
-
-                if len(data) == 0:
-                    os.remove(name)                    
-                    del keyTime[key]
+            mess = "{} removed from set".format(removeEles)
+            for ele in removeEles:
+                if ele not in data:
+                    mess = "{} does not exist".format(ele)
+                    return resourceNotFound(mess)
                 else:
-                    fh = open(name, 'w+')
-                    fh.write(" ".join(list(data)))
-                    fh.close()
-                    keyTime[key] = time
+                    data.remove(ele)
+
+            if len(data) == 0:
+                os.remove(name)                    
+                del keyTime[key]
+            else:
+                fh = open(name, 'w+')
+                fh.write(" ".join(list(data)))
+                fh.close()
+                keyTime[key] = time
 
             context = {
                 'message': mess,
@@ -304,10 +310,7 @@ def myView(request):
             firstKeyExist = checkIfKeyExistInRAM(firstKey, keyTime)
             if firstKeyExist == False:
                 mess = '{} does not exist'.format(firstKey)
-                context = {
-                    'message': mess,
-                }
-                return render(request, 'get.html', context)                      
+                return resourceNotFound(mess)                
                         
             name = path + "{}.txt".format(firstKey)
             fh = open(name, 'r+')
@@ -318,10 +321,7 @@ def myView(request):
                 keyExist = checkIfKeyExistInRAM(key, keyTime)
                 if keyExist == False:
                     mess = '{} does not exist'.format(key)
-                    context = {
-                        'message': mess,
-                    }
-                    return render(request, 'get.html', context)                    
+                    return resourceNotFound(mess)                 
                         
                 name = path + "{}.txt".format(key)
                 fh = open(name, 'r+')
@@ -330,7 +330,7 @@ def myView(request):
                 res = res.intersection(data)
 
             if len(res) == 0:
-                mess = "intersection does not exist"
+                mess = "there is no intersection"
                 context = {
                     'message': mess,
                 }   
@@ -349,11 +349,8 @@ def myView(request):
             for key in keyTime:
                 res.append(key)
             if len(res) == 0:
-                mess = "no key"
-                context = {
-                    'message': mess,
-                }
-                return render(request, 'get.html', context)
+                mess = 'key not found'
+                return resourceNotFound(mess)
 
             mess = " ".join(res)
             context = {
@@ -366,12 +363,13 @@ def myView(request):
             key = params[1]
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             if keyExist == False:
-                mess = 'key does not exist'
-            else:       
-                fileName = '{}.txt'.format(key)                  
-                deleteDirContent(path, fileName=fileName)
-                del keyTime[key]
-                mess = '{} is deleted'.format(key)
+                mess = 'key not found'
+                return resourceNotFound(mess)
+            
+            fileName = '{}.txt'.format(key)                  
+            deleteDirContent(path, fileName=fileName)
+            del keyTime[key]
+            mess = '{} is deleted'.format(key)
 
             context = {
                 'message': mess,
@@ -395,11 +393,7 @@ def myView(request):
             seconds = int(params[2])
             if int(seconds) != seconds or seconds <= 0:
                 mess = 'invalid seconds'
-                context = {
-                    'message': mess,
-                }
-
-                return render(request, 'get.html', context)
+                return badRequest(mess)
 
             keyExpire[key] = time + timedelta(seconds=seconds)
 
@@ -411,13 +405,14 @@ def myView(request):
 
         elif params[0] == 'TTL':
             key = params[1]
-            if checkIfKeyExistInRAM(key, keyExpire):
-                timeout = keyExpire[key] 
-                now = datetime.now()
-                existWithin = (timeout - now).total_seconds()
-                mess = existWithin
-            else:
+            if checkIfKeyExistInRAM(key, keyExpire) == False:
                 mess = 'this key does not have time out'
+                return resourceNotFound(mess)
+
+            timeout = keyExpire[key] 
+            now = datetime.now()
+            existWithin = (timeout - now).total_seconds()
+            mess = existWithin
 
             context = {
                 'message': mess,
@@ -497,4 +492,8 @@ def loadMetadata(fileName):
     
     return expectDict
     
+def badRequest(errorMessage):
+    return HttpResponseBadRequest('<h1>{}</h1>'.format(errorMessage))
 
+def resourceNotFound(errorMessage):
+    return HttpResponseNotFound('<h1>{}</h1>'.format(errorMessage))

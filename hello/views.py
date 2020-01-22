@@ -559,13 +559,17 @@ def writeData(pathToFile, data, mode, key, time, appendToRAM = True):
     availableModes = ["a", "w"]
     try:
         availableModes.index(mode)
+        if mode == "w":
+            os.system("echo {} > {}".format(data, pathToFile))
 
-        os.system("python createtxt.py")
+        # fh = open(pathToFile, mode)
+        # data = fh.write(data)
+            keyTime[key] = time
         
-        fh = open(pathToFile, mode)
-        data = fh.write(data)
-        keyTime[key] = time
-        fh.close()
+        else:
+            os.system('sed -i "$ s/$/{}/" {}'.format(data, pathToFile))
+            keyTime[key] = time
+        # fh.close()
         if appendToRAM == False:
             del keyTime[key]
 

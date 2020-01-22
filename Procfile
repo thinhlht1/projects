@@ -1,1 +1,1 @@
-web: gunicorn holisticsinterview.wsgi
+web: gunicorn mysite.wsgi

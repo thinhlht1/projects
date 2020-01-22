@@ -428,11 +428,11 @@ def myView(request):
             for key in keyExpire:
                 keyExpire[key] = keyExpire[key].strftime("%m %d %Y %H %M %S")
 
-            keyTimeSave = open(keyTimeName, 'w+')
+            keyTimeSave = open("keyTime.txt", 'w+')
             keyTimeSave.write(json.dumps(keyTime))
             keyTimeSave.close()
 
-            keyExpireSave = open(keyExpireName, 'w+')
+            keyExpireSave = open("keyExpire.txt", 'w+')
             keyExpireSave.write(json.dumps(keyExpire))
             keyExpireSave.close()
 

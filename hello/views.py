@@ -9,6 +9,7 @@ import glob
 import os
 import logging
 import re
+import copy
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if os.path.isdir(os.path.join("storage")) == False:
@@ -62,10 +63,6 @@ def myView(request):
             name = os.path.join(path, "{}.txt".format(key))
             data = readData(name)
             mess = "".join(data)
-            # name = path + '{}.txt'.format(key)
-            # val = open(name)
-            # mess = "".join(val.readlines()) + " " + name
-            # val.close()
 
             context = {
                 'message': mess,
@@ -82,13 +79,8 @@ def myView(request):
                 
             name = os.path.join(path, "{}.txt".format(key))
             data = readData(name)
-            # val = open(name)
-            # data = val.read()
-            # val.close()
-
             lst = data.split(" ")
             mess = len(lst)
-            
 
             context = {
                 'message': mess,
@@ -96,7 +88,7 @@ def myView(request):
 
             return render(request, 'get.html', context)
 
-        elif params[0] == 'RPUSH':
+        elif params[0] == 'RPUSH': # handle case empty list
             key = params[1]
             values = params[2:]
             val = " ".join(values)
@@ -105,25 +97,13 @@ def myView(request):
                 name = os.path.join(path, "{}.txt".format(key))
                 data = "{}".format(val)
                 writeData(name, data, "w", key, time)
-                # name = path + "{}.txt".format(key)
-                # fh = open(name, 'w+')                
-                # fh.write("{}".format(val))
-                # fh.close()   
-                
-                # keyTime[key] = time
                          
                 mess = 'new list created'
             else:
                 val = " " + val
                 name = os.path.join(path, "{}.txt".format(key))
                 data = "{}".format(val)
-                writeData(name, data, "a", key, time)
-                # name = path + "{}.txt".format(key)
-                # fh = open(name, 'a+')
-                # fh.write("{}".format(val))
-                # fh.close()
-
-                # keyTime[key] = time               
+                writeData(name, data, "a", key, time)       
 
                 mess = "appended data to existed list"
 
@@ -142,20 +122,11 @@ def myView(request):
 
             name = os.path.join(path, "{}.txt".format(key))
             data = readData(name)
-            # name = path + "{}.txt".format(key)
-            # fh = open(name, 'r+')
-            # data = fh.readlines()
-            # fh.close()
-
             data = "".join(data)
             lst = data.split(" ")
             mess = lst.pop(0)
 
             writeData(name, " ".join(lst), "w", key, time)
-            # f = open(name, 'w+')    
-            # keyTime[key] = time                          
-            # f.write(" ".join(lst))
-            # f.close()
 
             if len(lst) == 0:
                 os.remove(name)       
@@ -175,22 +146,13 @@ def myView(request):
                 return resourceNotFound( mess)
             
             name = os.path.join(path, "{}.txt".format(key))
-            # name = path + "{}.txt".format(key)
-            # fh = open(name, 'r+')
-            # data = fh.readlines()
-            # fh.close()
             data = readData(name)
 
             data = "".join(data)
             lst = data.split(" ")
             mess = lst.pop()
 
-            # f = open(name, 'w+')                               
-            # f.write(" ".join(lst))
-            # keyTime[key] = time
-            # f.close()
-            data = "{}".format(val)
-            writeData(name, data, "w", key, time)
+            writeData(name, " ".join(lst), "w", key, time)
 
             if len(lst) == 0:
                 os.remove(name)      
@@ -203,34 +165,38 @@ def myView(request):
             return render(request, 'get.html', context)
     
         elif params[0] == 'LRANGE':
-            key = params[1]
-            start, stop = int(params[2]), int(params[3])
-            if start > stop or start < 0 or stop < 0:
-                mess = "invalid parameters"
-                return badRequest(mess)
+            try:
+                key = params[1]
+                start, stop = int(params[2]), int(params[3])
+                if start > stop or start < 0 or stop < 0:
+                    mess = "invalid parameters"
+                    return badRequest(mess)
 
-            keyExist = checkIfKeyExistInRAM(key, keyTime)
+                keyExist = checkIfKeyExistInRAM(key, keyTime)
 
-            if keyExist == False:
-                mess = "key not found"
-                return resourceNotFound(mess)
+                if keyExist == False:
+                    mess = "key not found"
+                    return resourceNotFound(mess)
             
-            name = os.path.join(path, "{}.txt".format(key))
-            data = readData(name)
-            # val = open(name)
-            # val = open(path + '{}.txt'.format(key))
-            # data = val.read()
-            # val.close()
+                name = os.path.join(path, "{}.txt".format(key))
+                data = readData(name)
             
-            lst = data.split(" ")
-            mess = lst[start:stop]
-            mess = " ".join(mess)
+                lst = data.split(" ")
+                if stop > len(lst):
+                    mess = "index out of range"
+                    return resourceNotFound(mess)
 
-            context = {
-                'message': mess,
-            }
+                mess = lst[start:stop]
+                mess = " ".join(mess)
 
-            return render(request, 'get.html', context)
+                context = {
+                    'message': mess,
+                }
+
+                return render(request, 'get.html', context)
+            except ValueError:
+                mess = 'start and stop must be positive integers'
+                return badRequest(mess)           
     
         elif params[0] == 'SADD':
             key = params[1]
@@ -243,28 +209,14 @@ def myView(request):
                 name = os.path.join(path, "{}.txt".format(key))
                 data = "{}".format(val)
                 writeData(name, data, "w", key, time)
-                # name = path + "{}.txt".format(key)
-                # fh = open(name, 'w+')
-                # keyTime[key] = time
-                # fh.write("{}".format(val))
-                # fh.close()
 
                 mess = 'new set created'
             else:                            
                 name = os.path.join(path, "{}.txt".format(key))
                 data = set(readData(name).split(" "))
-
-                # name = path + "{}.txt".format(key)
-                # fh = open(name, 'r+')
-                # data = set(fh.read().split(" "))
-                # fh.close()
                 
                 newData = " ".join(list(data.union(val)))
                 writeData(name, newData, "w", key, time)
-                # fh = open(name, 'w+')
-                # fh.write("{}".format(newData))
-                # keyTime[key] = time
-                # fh.close()
 
                 mess = "appended data to existed set"
 
@@ -284,10 +236,6 @@ def myView(request):
             name = os.path.join(path, "{}.txt".format(key))
             data = readData(name)
             mess = len(data.split(" "))
-            # name = path + "{}.txt".format(key)
-            # fh = open(name, 'r+')
-            # mess = len(fh.read().split(" "))
-            # fh.close()
 
             context = {
                 'message': mess,
@@ -304,11 +252,7 @@ def myView(request):
                                       
             name = os.path.join(path, "{}.txt".format(key))   
             data = readData(name)
-            mess = set(data.split(" "))                       
-            # name = path + "{}.txt".format(key)
-            # fh = open(name, 'r+')
-            # mess = set(fh.read().split(" "))
-            # fh.close()
+            mess = data.split(" ")    
 
             context = {
                 'message': mess,
@@ -325,11 +269,7 @@ def myView(request):
                 return resourceNotFound(mess)
 
             name = os.path.join(path, "{}.txt".format(key))  
-            data = set(readData(name).split(" "))                     
-            # name = path + "{}.txt".format(key)
-            # fh = open(name, 'r+')
-            # data = set(fh.read().split(" "))
-            # fh.close()
+            data = set(readData(name).split(" "))        
 
             mess = "{} removed from set".format(removeEles)
             for ele in removeEles:
@@ -345,10 +285,6 @@ def myView(request):
             else:
                 data = " ".join(list(data))
                 writeData(name, data, "w", key, time)
-                # fh = open(name, 'w+')
-                # fh.write(" ".join(list(data)))
-                # fh.close()
-                # keyTime[key] = time
 
             context = {
                 'message': mess,
@@ -364,10 +300,7 @@ def myView(request):
                 return resourceNotFound(mess)                
 
             name = os.path.join(path, "{}.txt".format(firstKey))     
-            res = set(readData(name).split(" "))      
-            # name = path + "{}.txt".format(firstKey)
-            # fh = open(name, 'r+')
-            # res = set(fh.read().split(" "))
+            res = set(readData(name).split(" "))   
 
             keys = params[2:]     
             for key in keys:
@@ -377,11 +310,7 @@ def myView(request):
                     return resourceNotFound(mess)                 
 
                 name = os.path.join(path, "{}.txt".format(key))    
-                data = set(readData(name).split(" "))    
-                # name = path + "{}.txt".format(key)
-                # fh = open(name, 'r+')
-                # data = set(fh.read().split(" "))
-                # fh.close()
+                data = set(readData(name).split(" "))   
                 res = res.intersection(data)
 
             if len(res) == 0:
@@ -444,19 +373,28 @@ def myView(request):
             return render(request, 'get.html', context)
 
         elif params[0] == 'EXPIRE':
-            key = params[1]
-            seconds = int(params[2])
-            if int(seconds) != seconds or seconds <= 0:
-                mess = 'invalid seconds'
-                return badRequest(mess)
+            try:
+                key = params[1]
+                seconds = int(params[2])
+                if int(seconds) != seconds or seconds <= 0:
+                    mess = 'invalid seconds'
+                    return badRequest(mess)
 
-            keyExpire[key] = time + timedelta(seconds=seconds)
+                keyExist = checkIfKeyExistInRAM(key, keyTime)
+                if keyExist == False:
+                    mess = 'key not found'
+                    return resourceNotFound(mess)
 
-            context = {
-                'message': seconds,
-            }
+                keyExpire[key] = time + timedelta(seconds=seconds)
 
-            return render(request, 'get.html', context)
+                context = {
+                    'message': seconds,
+                }
+
+                return render(request, 'get.html', context)
+            except ValueError:
+                mess = 'seconds must be integer'
+                return badRequest(mess)  
 
         elif params[0] == 'TTL':
             key = params[1]
@@ -479,8 +417,8 @@ def myView(request):
             keyTimePath = os.path.join(metadata, keyTimeName)
             keyExpirePath = os.path.join(metadata, keyExpireName)
 
-            keyTimeToFile = keyTime
-            keyExpireToFile = keyExpire
+            keyTimeToFile = copy.deepcopy(keyTime)
+            keyExpireToFile = copy.deepcopy(keyExpire)
 
             for key in keyTimeToFile:
                 keyTimeToFile[key] = keyTimeToFile[key].strftime("%m %d %Y %H %M %S")
@@ -489,18 +427,10 @@ def myView(request):
                 keyExpireToFile[key] = keyExpireToFile[key].strftime("%m %d %Y %H %M %S")
 
             keyTimeData = json.dumps(keyTimeToFile)
-            writeData(keyTimePath, keyTimeData, "w", key, time, appendToRAM=False)
-
-            # keyTimeSave = open(keyTimePath, 'w+')
-            # keyTimeSave.write(json.dumps(keyTime))
-            # keyTimeSave.close()
+            writeData(keyTimePath, keyTimeData, "w", 0, 0, appendToRAM=False)
 
             keyExpireData = json.dumps(keyExpireToFile)
-            writeData(keyExpirePath, keyExpireData, "w", key, time, appendToRAM=False)
-
-            # keyExpireSave = open(keyExpirePath, 'w+')
-            # keyExpireSave.write(json.dumps(keyExpire))
-            # keyExpireSave.close()
+            writeData(keyExpirePath, keyExpireData, "w", 0, 0, appendToRAM=False)
 
             mess = 'current state has been saved to {}'.format(keyTimePath)
             context = {
@@ -533,7 +463,7 @@ def deleteDirContent(path, fileName=""):
         stringMeta = open(path + 'METADATA.txt', 'w')
         stringMeta.close()
     else:
-        name = path + fileName
+        name = os.path.join(path, fileName)
         os.remove(name)
 
 def checkIfKeyExistInRAM(key, dic):

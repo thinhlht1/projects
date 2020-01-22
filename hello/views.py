@@ -485,6 +485,7 @@ def loadMetadata(fileName):
     fh.close()
     content = content.rstrip('}').lstrip('{')
     pairs = content.strip(" ").split(",")
+    print(pairs)
     for pair in pairs:
         key, val = pair.split(":")
         key = key.strip(' ').strip('"')

@@ -425,8 +425,8 @@ def myView(request):
             return render(request, 'get.html', context)
 
         elif params[0] == 'SAVE':
-            keyTimePath = metadata + keyTimeName
-            keyExpirePath = metadata + keyExpireName
+            keyTimePath = keyTimeName
+            keyExpirePath = keyExpireName
 
             for key in keyTime:
                 keyTime[key] = keyTime[key].strftime("%m %d %Y %H %M %S")
@@ -450,8 +450,8 @@ def myView(request):
             return render(request, 'get.html', context)
 
         elif params[0] == 'RESTORE':
-            keyTimePath = metadata + keyTimeName
-            keyExpirePath = metadata + keyExpireName
+            keyTimePath = keyTimeName
+            keyExpirePath = keyExpireName
             keyTime = loadMetadata(keyTimePath)
             keyExpire = loadMetadata(keyExpirePath)
 

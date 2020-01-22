@@ -60,8 +60,7 @@ def myView(request):
             key = params[1]
             val = params[2]
             
-            # name = os.path.join(stringPath, "{}.txt".format(key))
-            name = os.path.join(stringPath)
+            name = os.path.join(stringPath, "{}.txt".format(key))
             data = "{}".format(val)
             writeData(name, data, "w", key, time)
 
@@ -125,6 +124,10 @@ def myView(request):
                 writeData(name, data, "w", key, time)                         
                 mess = 'new list created'
             else:
+                if checkFileExist(name) == False:
+                    mess = "value of {} is not a list".format(key)
+                    return resourceNotFound(mess)
+
                 val = " " + val
                 data = "{}".format(val)
                 writeData(name, data, "a", key, time)     
@@ -560,15 +563,13 @@ def writeData(pathToFile, data, mode, key, time, appendToRAM = True):
     availableModes = ["a", "w"]
     try:
         availableModes.index(mode)
-        os.system('cd storage/string')
-        os.system('echo {} > {}.txt'.format(data, key))
-        os.system('cd ../..')
-        # fh = open(pathToFile, mode)
-        # data = fh.write(data)
-        # keyTime[key] = time
-        # fh.close()
-        # if appendToRAM == False:
-        #     del keyTime[key]
+
+        fh = open(pathToFile, mode)
+        data = fh.write(data)
+        keyTime[key] = time
+        fh.close()
+        if appendToRAM == False:
+            del keyTime[key]
 
     except ValueError:
         logging.error("available actions are a and w")

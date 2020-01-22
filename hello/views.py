@@ -560,6 +560,8 @@ def writeData(pathToFile, data, mode, key, time, appendToRAM = True):
     try:
         availableModes.index(mode)
 
+        os.system("python createtxt.py")
+        
         fh = open(pathToFile, mode)
         data = fh.write(data)
         keyTime[key] = time

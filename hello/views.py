@@ -13,11 +13,14 @@ path = "storage/"
 
 metadata = "metadata/"
 
-keyTimeName = "keyTime.txt"
-keyExpireName = "keyExpire.txt"
+keyTime = {}
+keyExpire = {}
 
 keyTime = {}
 keyExpire = {}
+
+keyTimeName = "keyTime.txt"
+keyExpireName = "keyExpire.txt"
 
 validCommand = ['SET', 'GET', 'LLEN ', 'RPUSH ', 'LPOP ', 'RPOP ', 'LRANGE ', 'SADD', 
             'SCARD', 'SMEMBERS', 'SREM', 'SINTER', 'KEYS', 'DEL', 'FLUSHDB', 'EXPIRE', 
@@ -25,12 +28,13 @@ validCommand = ['SET', 'GET', 'LLEN ', 'RPUSH ', 'LPOP ', 'RPOP ', 'LRANGE ', 'S
 # Create your views here.
 
 def myView(request):
+    global keyTime
+    global keyExpire
     if request.method == 'POST':
         content = request.POST['content']
         params = content.split(" ")
         time = datetime.now()
         if params[0] == 'SET':
-            global keyTime
             key = params[1]
             val = params[2]
             

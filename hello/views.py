@@ -10,8 +10,10 @@ import os
 import re
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-path = os.path.join(BASE_DIR, "")
-metadata = os.path.join(BASE_DIR, "")
+os.mkdir('storage')
+os.mkdir('metadata')
+path = os.path.join(BASE_DIR, "storage/")
+metadata = os.path.join(BASE_DIR, "metadata/")
 
 keyTime = {}
 keyExpire = {}
@@ -422,6 +424,9 @@ def myView(request):
             return render(request, 'get.html', context)
 
         elif params[0] == 'SAVE':
+            keyTimePath = metadata + keyTimeName
+            keyExpirePath = metadata + keyExpireName
+
             for key in keyTime:
                 keyTime[key] = keyTime[key].strftime("%m %d %Y %H %M %S")
 
@@ -429,11 +434,11 @@ def myView(request):
                 keyExpire[key] = keyExpire[key].strftime("%m %d %Y %H %M %S")
 
             keyTimeSave = open("keyTime.txt", 'w+')
-            keyTimeSave.write(json.dumps(keyTime))
+            keyTimeSave.write(json.dumps(keyTimePath))
             keyTimeSave.close()
 
             keyExpireSave = open("keyExpire.txt", 'w+')
-            keyExpireSave.write(json.dumps(keyExpire))
+            keyExpireSave.write(json.dumps(keyExpirePath))
             keyExpireSave.close()
 
             mess = 'current state has been saved to {}'.format(keyTimeName)
@@ -444,8 +449,9 @@ def myView(request):
             return render(request, 'get.html', context)
 
         elif params[0] == 'RESTORE':
-            keyTimePath = keyTimeName
-            keyExpirePath = keyExpireName
+            keyTimePath = metadata + keyTimeName
+            keyExpirePath = metadata + keyExpireName
+            
             keyTime = loadMetadata(keyTimePath)
             keyExpire = loadMetadata(keyExpirePath)
 

@@ -450,8 +450,6 @@ def myView(request):
             return render(request, 'get.html', context)
 
         elif params[0] == 'RESTORE':
-            global keyTime
-            global keyExpire
             keyTimePath = metadata + keyTimeName
             keyExpirePath = metadata + keyExpireName
             keyTime = loadMetadata(keyTimePath)

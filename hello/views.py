@@ -28,8 +28,6 @@ def myView(request):
         content = request.POST['content']
         params = content.split(" ")
         time = datetime.now()
-        # time = originalTime.strftime("%H:%M:%S")
-        # tested
         if params[0] == 'SET':
             global keyTime
             key = params[1]
@@ -45,7 +43,7 @@ def myView(request):
                 del keyExpire[key]   
 
             return render(request, 'set.html')
-        # tested
+
         elif params[0] == 'GET':
             key = params[1]
             keyExist = checkIfKeyExistInRAM(key, keyTime)
@@ -64,7 +62,6 @@ def myView(request):
 
             return render(request, 'get.html', context)
 
-        # tested
         elif params[0] == 'LLEN':
             key = params[1]
             keyExist = checkIfKeyExistInRAM(key, keyTime)
@@ -83,7 +80,6 @@ def myView(request):
 
             return render(request, 'get.html', context)
 
-        # tested
         elif params[0] == 'RPUSH':
             key = params[1]
             values = params[2:]
@@ -104,8 +100,6 @@ def myView(request):
                 keyTime[key] = time
                 fh.close()
 
-                # temp = path + "temp.txt" 
-                # changeMetadata(temp, metadata, key, time)
                 mess = "appended data to existed list"
 
             context = {
@@ -113,8 +107,7 @@ def myView(request):
             }
 
             return render(request, 'get.html', context)
-            
-        # tested
+
         elif params[0] == 'LPOP':
             key = params[1]
             keyExist = checkIfKeyExistInRAM(key, keyTime)
@@ -134,15 +127,9 @@ def myView(request):
                 f.write(" ".join(lst))
                 f.close()
 
-                
-                # temp = path + "temp.txt" 
-
                 if len(lst) == 0:
                     os.remove(name)       
-                    del keyTime[key]             
-                #     changeMetadata(temp, metadata, key, time, removeKey=True)
-                # else:
-                #     changeMetadata(temp, metadata, key, time)                
+                    del keyTime[key]                            
 
             context = {
                 'message': mess,
@@ -150,7 +137,6 @@ def myView(request):
 
             return render(request, 'get.html', context)
 
-        # tested
         elif params[0] == 'RPOP':
             key = params[1]
             keyExist = checkIfKeyExistInRAM(key, keyTime)
@@ -170,14 +156,10 @@ def myView(request):
                 f.write(" ".join(lst))
                 keyTime[key] = time
                 f.close()
-                # temp = path + "temp.txt" 
 
                 if len(lst) == 0:
                     os.remove(name)      
-                    del keyTime[key]               
-                #     changeMetadata(temp, metadata, key, time, removeKey=True)
-                # else:
-                #     changeMetadata(temp, metadata, key, time)                
+                    del keyTime[key]                          
 
             context = {
                 'message': mess,
@@ -185,7 +167,6 @@ def myView(request):
 
             return render(request, 'get.html', context)
     
-        # tested
         elif params[0] == 'LRANGE':
             key = params[1]
             start, stop = int(params[2]), int(params[3])
@@ -214,7 +195,6 @@ def myView(request):
 
             return render(request, 'get.html', context)
     
-        # tested
         elif params[0] == 'SADD':
             key = params[1]
             values = params[2:]
@@ -227,10 +207,6 @@ def myView(request):
                 keyTime[key] = time
                 fh.write("{}".format(val))
                 fh.close()
-
-                # f = open(metadata, "a")
-                # f.write("{} {}\n".format(key, time))
-                # f.close()
 
                 mess = 'new set created'
             else:                            
@@ -246,8 +222,6 @@ def myView(request):
                 keyTime[key] = time
                 fh.close()
 
-                # temp = path + "temp.txt" 
-                # changeMetadata(temp, metadata, key, time)
                 mess = "appended data to existed set"
 
             context = {
@@ -256,7 +230,6 @@ def myView(request):
 
             return render(request, 'get.html', context)
     
-        # tested
         elif params[0] == 'SCARD':
             key = params[1]
             keyExist = checkIfKeyExistInRAM(key, keyTime)
@@ -274,7 +247,6 @@ def myView(request):
 
             return render(request, 'get.html', context)
 
-        # tested
         elif params[0] == 'SMEMBERS':
             key = params[1]
             keyExist = checkIfKeyExistInRAM(key, keyTime)
@@ -292,7 +264,6 @@ def myView(request):
 
             return render(request, 'get.html', context)
 
-        # tested
         elif params[0] == 'SREM':
             key = params[1]
             removeEles = params[2:]
@@ -313,17 +284,14 @@ def myView(request):
                     else:
                         data.remove(ele)
 
-                # temp = path + "temp.txt" 
                 if len(data) == 0:
                     os.remove(name)                    
-                    # changeMetadata(temp, metadata, key, time, removeKey=True)
                     del keyTime[key]
                 else:
                     fh = open(name, 'w+')
                     fh.write(" ".join(list(data)))
                     fh.close()
                     keyTime[key] = time
-                    # changeMetadata(temp, metadata, key, time) 
 
             context = {
                 'message': mess,
@@ -331,7 +299,6 @@ def myView(request):
 
             return render(request, 'get.html', context)    
 
-        # tested
         elif params[0] == 'SINTER':
             firstKey = params[1]
             firstKeyExist = checkIfKeyExistInRAM(firstKey, keyTime)
@@ -377,7 +344,6 @@ def myView(request):
 
             return render(request, 'get.html', context)
 
-        # tested
         elif params[0] == 'KEYS':
             res = []
             for key in keyTime:
@@ -396,7 +362,6 @@ def myView(request):
 
             return render(request, 'get.html', context)
         
-        # tested
         elif params[0] == 'DEL':
             key = params[1]
             keyExist = checkIfKeyExistInRAM(key, keyTime)
@@ -414,7 +379,6 @@ def myView(request):
 
             return render(request, 'get.html', context)
 
-        # tested
         elif params[0] == 'FLUSHDB':
             deleteDirContent(path)
             keyTime = {}
@@ -502,40 +466,6 @@ def myView(request):
             return render(request, 'get.html', context)
     else:
         return render(request, 'entry.html')
-
-def checkIfKeyExist(key, metadir):
-    keyExist = False
-    meta = open(metadir, 'r')
-    keyToBeFound = "\\b{}\\b".format(key)
-    if len(re.findall(keyToBeFound, meta.read())) != 0:
-        keyExist = True
-    meta.close()
-
-    return keyExist
-
-def changeMetadata(temp, metadir, key, time, removeKey = False):
-    meta = open(metadir, 'r+')   
-    lines = meta.readlines()                
-    meta.close()
-
-    f = open(temp, "w")
-    if removeKey == False:
-        for line in lines:
-            if line.strip().split(" ")[0] != key:
-                f.write(line)
-            else:
-                line = "{} {}\n".format(key, time)
-                f.write(line)
-    else:
-        for line in lines:
-            if line.strip().split(" ")[0] != key:
-                f.write(line)
-            else:
-                continue
-                
-    f.close()
-    os.remove(metadir)
-    os.rename(temp, metadir)
 
 def deleteDirContent(path, fileName=""):
     if fileName == "":

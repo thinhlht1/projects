@@ -10,16 +10,33 @@ import os
 import logging
 import re
 import copy
+import shutil
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if os.path.isdir(os.path.join("storage")) == False:
-    os.mkdir('storage')
-
-if os.path.isdir(os.path.join("metadata")) == False:
-    os.mkdir('metadata')
 
 path = os.path.join(BASE_DIR, "storage")
 metadata = os.path.join(BASE_DIR, "metadata")
+
+stringPath = os.path.join(path, "string")
+listPath = os.path.join(path, "list")
+setPath = os.path.join(path, "set")
+
+dataStructures = [stringPath, listPath, setPath]
+
+if os.path.isdir(path) == False:
+    os.mkdir(path)
+
+if os.path.isdir(metadata) == False:
+    os.mkdir(metadata)
+
+if os.path.isdir(stringPath) == False:
+    os.mkdir(stringPath)
+
+if os.path.isdir(listPath) == False:
+    os.mkdir(listPath)
+
+if os.path.isdir(setPath) == False:
+    os.mkdir(setPath)
 
 keyTime = {}
 keyExpire = {}
@@ -43,7 +60,7 @@ def myView(request):
             key = params[1]
             val = params[2]
             
-            name = os.path.join(path, "{}.txt".format(key))
+            name = os.path.join(stringPath, "{}.txt".format(key))
             data = "{}".format(val)
             writeData(name, data, "w", key, time)
 
@@ -59,8 +76,12 @@ def myView(request):
             if keyExist == False:
                 mess = "key not found"
                 return resourceNotFound(mess)
-            
-            name = os.path.join(path, "{}.txt".format(key))
+                        
+            name = os.path.join(stringPath, "{}.txt".format(key))
+            if checkFileExist(name) == False:
+                mess = "value of {} is not a string".format(key)
+                return resourceNotFound(mess)
+
             data = readData(name)
             mess = "".join(data)
 
@@ -77,7 +98,11 @@ def myView(request):
                 mess = 'key not found'
                 return resourceNotFound(mess)
                 
-            name = os.path.join(path, "{}.txt".format(key))
+            name = os.path.join(listPath, "{}.txt".format(key))
+            if checkFileExist(name) == False:
+                mess = "value of {} is not a list".format(key)
+                return resourceNotFound(mess)
+
             data = readData(name)
             lst = data.split(" ")
             mess = len(lst)
@@ -93,18 +118,15 @@ def myView(request):
             values = params[2:]
             val = " ".join(values)
             keyExist = checkIfKeyExistInRAM(key, keyTime)
+            name = os.path.join(listPath, "{}.txt".format(key))
             if keyExist == False:
-                name = os.path.join(path, "{}.txt".format(key))
                 data = "{}".format(val)
-                writeData(name, data, "w", key, time)
-                         
+                writeData(name, data, "w", key, time)                         
                 mess = 'new list created'
             else:
                 val = " " + val
-                name = os.path.join(path, "{}.txt".format(key))
                 data = "{}".format(val)
-                writeData(name, data, "a", key, time)       
-
+                writeData(name, data, "a", key, time)     
                 mess = "appended data to existed list"
 
             context = {
@@ -120,7 +142,11 @@ def myView(request):
                 mess = "key not found"
                 return resourceNotFound(mess)
 
-            name = os.path.join(path, "{}.txt".format(key))
+            name = os.path.join(listPath, "{}.txt".format(key))
+            if checkFileExist(name) == False:
+                mess = "value of {} is not a list".format(key)
+                return resourceNotFound(mess)
+
             data = readData(name)
             data = "".join(data)
             lst = data.split(" ")
@@ -145,9 +171,12 @@ def myView(request):
                 mess = "key not found"
                 return resourceNotFound( mess)
             
-            name = os.path.join(path, "{}.txt".format(key))
-            data = readData(name)
+            name = os.path.join(listPath, "{}.txt".format(key))
+            if checkFileExist(name) == False:
+                mess = "value of {} is not a list".format(key)
+                return resourceNotFound(mess)
 
+            data = readData(name)
             data = "".join(data)
             lst = data.split(" ")
             mess = lst.pop()
@@ -178,9 +207,12 @@ def myView(request):
                     mess = "key not found"
                     return resourceNotFound(mess)
             
-                name = os.path.join(path, "{}.txt".format(key))
-                data = readData(name)
-            
+                name = os.path.join(listPath, "{}.txt".format(key))
+                if checkFileExist(name) == False:
+                    mess = "value of {} is not a list".format(key)
+                    return resourceNotFound(mess)
+
+                data = readData(name)            
                 lst = data.split(" ")
                 if stop > len(lst):
                     mess = "index out of range"
@@ -203,21 +235,16 @@ def myView(request):
             values = params[2:]
             val = set(values)
             keyExist = checkIfKeyExistInRAM(key, keyTime)
+            name = os.path.join(setPath, "{}.txt".format(key))
             if keyExist == False:
-                val = " ".join(list(val))
-
-                name = os.path.join(path, "{}.txt".format(key))
+                val = " ".join(list(val))                
                 data = "{}".format(val)
                 writeData(name, data, "w", key, time)
-
                 mess = 'new set created'
             else:                            
-                name = os.path.join(path, "{}.txt".format(key))
-                data = set(readData(name).split(" "))
-                
+                data = set(readData(name).split(" "))                
                 newData = " ".join(list(data.union(val)))
                 writeData(name, newData, "w", key, time)
-
                 mess = "appended data to existed set"
 
             context = {
@@ -233,7 +260,11 @@ def myView(request):
                 mess = 'key not found'
                 return resourceNotFound(mess)
                         
-            name = os.path.join(path, "{}.txt".format(key))
+            name = os.path.join(setPath, "{}.txt".format(key))
+            if checkFileExist(name) == False:
+                mess = "value of {} is not a set".format(key)
+                return resourceNotFound(mess)
+
             data = readData(name)
             mess = len(data.split(" "))
 
@@ -250,7 +281,11 @@ def myView(request):
                 mess = 'key not found'
                 return resourceNotFound(mess)
                                       
-            name = os.path.join(path, "{}.txt".format(key))   
+            name = os.path.join(setPath, "{}.txt".format(key)) 
+            if checkFileExist(name) == False:
+                mess = "value of {} is not a set".format(key)
+                return resourceNotFound(mess)  
+
             data = readData(name)
             mess = data.split(" ")    
 
@@ -268,7 +303,11 @@ def myView(request):
                 mess = 'key not found'
                 return resourceNotFound(mess)
 
-            name = os.path.join(path, "{}.txt".format(key))  
+            name = os.path.join(setPath, "{}.txt".format(key))  
+            if checkFileExist(name) == False:
+                mess = "value of {} is not a set".format(key)
+                return resourceNotFound(mess)
+
             data = set(readData(name).split(" "))        
 
             mess = "{} removed from set".format(removeEles)
@@ -299,7 +338,11 @@ def myView(request):
                 mess = '{} does not exist'.format(firstKey)
                 return resourceNotFound(mess)                
 
-            name = os.path.join(path, "{}.txt".format(firstKey))     
+            name = os.path.join(setPath, "{}.txt".format(firstKey))    
+            if checkFileExist(name) == False:
+                mess = "value of {} is not a set".format(key)
+                return resourceNotFound(mess) 
+
             res = set(readData(name).split(" "))   
 
             keys = params[2:]     
@@ -307,9 +350,13 @@ def myView(request):
                 keyExist = checkIfKeyExistInRAM(key, keyTime)
                 if keyExist == False:
                     mess = '{} does not exist'.format(key)
-                    return resourceNotFound(mess)                 
+                    return resourceNotFound(mess)            
 
-                name = os.path.join(path, "{}.txt".format(key))    
+                name = os.path.join(setPath, "{}.txt".format(key)) 
+                if checkFileExist(name) == False:
+                    mess = "value of {} is not a set".format(key)
+                    return resourceNotFound(mess)    
+
                 data = set(readData(name).split(" "))   
                 res = res.intersection(data)
 
@@ -350,8 +397,13 @@ def myView(request):
                 mess = 'key not found'
                 return resourceNotFound(mess)
             
-            fileName = '{}.txt'.format(key)                  
-            deleteDirContent(path, fileName=fileName)
+            for dataStructure in dataStructures:
+                fileName = "{}.txt".format(key)
+                fileToBeRemoved = os.path.join(dataStructure, fileName)    
+                if checkFileExist(fileToBeRemoved) == True:            
+                    deleteDirContent(dataStructure, fileName)
+                    break
+
             del keyTime[key]
             mess = '{} is deleted'.format(key)
 
@@ -362,7 +414,9 @@ def myView(request):
             return render(request, 'get.html', context)
 
         elif params[0] == 'FLUSHDB':
-            deleteDirContent(path)
+            for dataStructure in dataStructures:
+                deleteDirContent(dataStructure)
+
             keyTime = {}
             mess = 'all keys deleted'
 
@@ -455,13 +509,15 @@ def myView(request):
     else:
         return render(request, 'entry.html')
 
+def checkFileExist(pathToFile):
+    return os.path.isfile(pathToFile)
+
 def deleteDirContent(path, fileName=""):
-    if fileName == "":
-        files = glob.glob(path + '*.txt')
-        for f in files:
-            os.remove(f)
-        stringMeta = open(path + 'METADATA.txt', 'w')
-        stringMeta.close()
+    if fileName == "":     
+        dir = os.path.join(path, "*")  
+        files = glob.glob(dir)
+        for file in files:
+            os.remove(file)
     else:
         name = os.path.join(path, fileName)
         os.remove(name)
@@ -472,9 +528,6 @@ def checkIfKeyExistInRAM(key, dic):
 def loadMetadata(fileName):
     expectDict = {}
     content = readData(fileName)
-    # fh = open(fileName, 'r+')    
-    # content = fh.read()
-    # fh.close()    
     content = content.rstrip('}').lstrip('{')    
     pairs = content.strip(" ").split(",")    
     for pair in pairs:

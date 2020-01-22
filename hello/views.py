@@ -444,9 +444,7 @@ def myView(request):
             return render(request, 'get.html', context)
 
         elif params[0] == 'SAVE':
-            # keyTimePath = metadata + keyTimeName
             keyTimePath = os.path.join(metadata, keyTimeName)
-            # keyExpirePath = metadata + keyExpireName
             keyExpirePath = os.path.join(metadata, keyExpireName)
 
             for key in keyTime:
@@ -463,6 +461,12 @@ def myView(request):
             keyExpireSave.write(json.dumps(keyExpire))
             keyExpireSave.close()
 
+            for key in keyTime:
+                keyTime[key] = datetime.strptime(keyTime[key], '%m %d %Y %H %M %S')
+
+            for key in keyExpire:
+                keyExpire[key] = datetime.strptime(keyExpire[key], '%m %d %Y %H %M %S')
+
             mess = 'current state has been saved to {}'.format(keyTimePath)
             context = {
                 'message': mess,
@@ -471,9 +475,7 @@ def myView(request):
             return render(request, 'get.html', context)
 
         elif params[0] == 'RESTORE':
-            # keyTimePath = metadata + keyTimeName
             keyTimePath = os.path.join(metadata, keyTimeName)
-            # keyExpirePath = metadata + keyExpireName
             keyExpirePath = os.path.join(metadata, keyExpireName)
 
             keyTime = loadMetadata(keyTimePath)

@@ -56,7 +56,7 @@ def myView(request):
             
             name = path + '{}.txt'.format(key)
             val = open(name)
-            mess = "".join(val.readlines())
+            mess = "".join(val.readlines()) + " " + name
             val.close()
 
             context = {

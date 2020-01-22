@@ -10,8 +10,6 @@ import os
 import re
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-os.mkdir('storage')
-os.mkdir('metadata')
 path = os.path.join(BASE_DIR, "storage/")
 metadata = os.path.join(BASE_DIR, "metadata/")
 
@@ -451,7 +449,7 @@ def myView(request):
         elif params[0] == 'RESTORE':
             keyTimePath = metadata + keyTimeName
             keyExpirePath = metadata + keyExpireName
-            
+
             keyTime = loadMetadata(keyTimePath)
             keyExpire = loadMetadata(keyExpirePath)
 

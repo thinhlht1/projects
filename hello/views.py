@@ -436,7 +436,7 @@ def myView(request):
             keyExpireSave.write(json.dumps(keyExpire))
             keyExpireSave.close()
 
-            mess = 'current state has been saved to {}'.format(keyTimePath)
+            mess = 'current state has been saved to {}'.format(keyTimeName)
             context = {
                 'message': mess,
             }

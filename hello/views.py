@@ -122,7 +122,8 @@ def myView(request):
             if keyExist == False:
                 data = "{}".format(val)
                 writeData(name, data, "w", key, time)                         
-                mess = 'new list created'
+                # mess = 'new list created'
+                mess = name
             else:
                 val = " " + val
                 data = "{}".format(val)
@@ -561,7 +562,6 @@ def writeData(pathToFile, data, mode, key, time, appendToRAM = True):
         availableModes.index(mode)
         if mode == "w":
             os.system("echo {} > {}".format(data, pathToFile))
-
         # fh = open(pathToFile, mode)
         # data = fh.write(data)
             keyTime[key] = time

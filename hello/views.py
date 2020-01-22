@@ -16,9 +16,6 @@ metadata = os.path.join(BASE_DIR, "")
 keyTime = {}
 keyExpire = {}
 
-keyTime = {}
-keyExpire = {}
-
 keyTimeName = "keyTime.txt"
 keyExpireName = "keyExpire.txt"
 
@@ -425,20 +422,17 @@ def myView(request):
             return render(request, 'get.html', context)
 
         elif params[0] == 'SAVE':
-            keyTimePath = keyTimeName
-            keyExpirePath = keyExpireName
-
             for key in keyTime:
                 keyTime[key] = keyTime[key].strftime("%m %d %Y %H %M %S")
 
             for key in keyExpire:
                 keyExpire[key] = keyExpire[key].strftime("%m %d %Y %H %M %S")
 
-            keyTimeSave = open(keyTimePath, 'w+')
+            keyTimeSave = open(keyTimeName, 'w+')
             keyTimeSave.write(json.dumps(keyTime))
             keyTimeSave.close()
 
-            keyExpireSave = open(keyExpirePath, 'w+')
+            keyExpireSave = open(keyExpireName, 'w+')
             keyExpireSave.write(json.dumps(keyExpire))
             keyExpireSave.close()
 

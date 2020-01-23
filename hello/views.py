@@ -63,20 +63,18 @@ def myView(request):
             try:
                 key = params[1]
                 startKey = content.find(key)
-                endKey = startKey + len(key)
-                val = content[endKey+1:]
-                if len(val) == 0:
+                endKey = startKey + len(key) # finding the end position of keyword
+                val = content[endKey+1:] # consider the rest of the string as value
+                if len(val) == 0: # avoid not passing any value
                     mess = 'value must not be empty'
                     return badRequest(mess)
-                
-                val = "".join(val)
             
-                name = os.path.join(stringPath, "{}.txt".format(key))
+                name = os.path.join(stringPath, "{}.txt".format(key)) # path to place for saving file
                 data = "{}".format(val)
                 writeData(name, data, "w", key, time) 
 
                 return render(request, 'set.html')
-            except Exception:
+            except Exception: # in case client do not pass any key
                 mess = 'key must not be blank'
                 return badRequest(mess)
 
@@ -86,18 +84,18 @@ def myView(request):
                 return badRequest(mess)
 
             key = params[1]            
-            keyExist = checkIfKeyExistInRAM(key, keyTime)
+            keyExist = checkIfKeyExistInRAM(key, keyTime) # check if key exist
 
             if keyExist == False:
                 mess = "key not found"
                 return resourceNotFound(mess)
                         
-            name = os.path.join(stringPath, "{}.txt".format(key))
-            if checkFileExist(name) == False:
+            name = os.path.join(stringPath, "{}.txt".format(key)) # path to file, in this case string folder
+            if checkFileExist(name) == False: # if value of key is set or list, this test fail
                 mess = "value of {} is not a string".format(key)
                 return resourceNotFound(mess)
 
-            data = readData(name)
+            data = readData(name) # take data
             mess = data
             context = {
                 'message': mess,
@@ -122,8 +120,8 @@ def myView(request):
                 return resourceNotFound(mess)
 
             data = readData(name)
-            lst = data.split(" ")
-            mess = len(lst)
+            lst = data.split(" ") # additional data transformation
+            mess = len(lst) # additional data transformation
 
             context = {
                 'message': mess,
@@ -138,21 +136,21 @@ def myView(request):
                 mess = 'value must not be empty'
                 return badRequest(mess)
 
-            val = " ".join(values)
+            val = " ".join(values) # value from user 
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             name = os.path.join(listPath, "{}.txt".format(key))
-            if keyExist == False:
+            if keyExist == False: # if the key have not already existed, create new file
                 data = "{}".format(val)
                 writeData(name, data, "w", key, time)                         
                 mess = 'new list created'
-            else:
-                if checkFileExist(name) == False:
+            else: # if the key have already existed
+                if checkFileExist(name) == False: # check if is a list or not to avoid append data to set or string
                     mess = "value of {} is not a list".format(key)
                     return resourceNotFound(mess)
 
                 val = " " + val
                 data = "{}".format(val)
-                writeData(name, data, "a", key, time)     
+                writeData(name, data, "a", key, time)    # append to the file 
                 mess = "appended data to existed list"
 
             context = {
@@ -177,12 +175,13 @@ def myView(request):
                 mess = "value of {} is not a list".format(key)
                 return resourceNotFound(mess)
 
+            # remove first element of list
             data = readData(name)
             data = "".join(data)
             lst = data.split(" ")
             mess = lst.pop(0)
 
-            writeData(name, " ".join(lst), "w", key, time)
+            writeData(name, " ".join(lst), "w", key, time) # overwrite new list on old list
 
             if len(lst) == 0:
                 os.remove(name)       
@@ -217,6 +216,8 @@ def myView(request):
 
             writeData(name, " ".join(lst), "w", key, time)
 
+            # if client remove all element of list, delete file from folder, 
+            # remove key from RAM
             if len(lst) == 0:
                 os.remove(name)      
                 del keyTime[key]                          
@@ -275,7 +276,7 @@ def myView(request):
                 mess = 'value must not be empty'
                 return badRequest(mess)
 
-            val = set(values)
+            val = set(values) # new data
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             name = os.path.join(setPath, "{}.txt".format(key))
             if keyExist == False:
@@ -283,10 +284,11 @@ def myView(request):
                 data = "{}".format(val)
                 writeData(name, data, "w", key, time)
                 mess = 'new set created'
-            else:                            
-                data = set(readData(name).split(" "))                
-                newData = " ".join(list(data.union(val)))
-                writeData(name, newData, "w", key, time)
+            else: # if the set have already existed, if old data is 1 2 3, and new data is 2 3 4 then
+                # value of the key is 1 2 3 4                           
+                data = set(readData(name).split(" ")) # load existed data, convert those data into set             
+                newData = " ".join(list(data.union(val))) # find union of old data with new data
+                writeData(name, newData, "w", key, time) # overwrite result to existed file
                 mess = "appended data to existed set"
 
             context = {
@@ -361,13 +363,17 @@ def myView(request):
             data = set(readData(name).split(" "))        
 
             mess = "{} removed from set".format(removeEles)
-            for ele in removeEles:
-                if ele not in data:
+            for ele in removeEles: # remove element one by one
+                # below could be run concurrently. In Golang, I could push data variable
+                # to unbuffered channel and below code is executed by goroutines
+                if ele not in data: # checking existence of ele ment could be run without lock
                     mess = "{} does not exist".format(ele)
                     return resourceNotFound(mess)
-                else:
-                    data.remove(ele)
+                else: # block data when removing ele
+                    data.remove(ele) # use remove method of set 
 
+            # if client remove all element of list, delete file from folder, 
+            # remove key from RAM
             if len(data) == 0:
                 os.remove(name)                    
                 del keyTime[key]
@@ -393,11 +399,15 @@ def myView(request):
                 mess = "value of {} is not a set".format(key)
                 return resourceNotFound(mess) 
 
-            res = set(readData(name).split(" "))   
+            res = set(readData(name).split(" ")) # init result equal to value of first key   
 
             keys = params[2:]     
             for key in keys:
-                keyExist = checkIfKeyExistInRAM(key, keyTime)
+                # this block of code could be run concurrently by passing res to channel
+                # and below code is executed by goroutines
+                # checking existence of keys, loading data do not need to be locked
+                # while finding intersection (res variable) is locked
+                keyExist = checkIfKeyExistInRAM(key, keyTime) 
                 if keyExist == False:
                     mess = '{} does not exist'.format(key)
                     return resourceNotFound(mess)            
@@ -407,8 +417,8 @@ def myView(request):
                     mess = "value of {} is not a set".format(key)
                     return resourceNotFound(mess)    
 
-                data = set(readData(name).split(" "))   
-                res = res.intersection(data)
+                data = set(readData(name).split(" ")) # load data of next key and convert the data to set 
+                res = res.intersection(data) # find intersection of the data with previous result
 
             if len(res) == 0:
                 mess = "there is no intersection"
@@ -451,10 +461,11 @@ def myView(request):
                 mess = 'key not found'
                 return resourceNotFound(mess)
             
+            fileName = "{}.txt".format(key)
             for dataStructure in dataStructures:
-                fileName = "{}.txt".format(key)
-                fileToBeRemoved = os.path.join(dataStructure, fileName)    
-                if checkFileExist(fileToBeRemoved) == True:            
+                # this block of code could be run concurrently without locking                
+                fileToBeRemoved = os.path.join(dataStructure, fileName) # check if key exist in each folder    
+                if checkFileExist(fileToBeRemoved) == True:           
                     deleteDirContent(dataStructure, fileName)
                     break
 
@@ -468,7 +479,7 @@ def myView(request):
             return render(request, 'get.html', context)
 
         elif params[0] == 'FLUSHDB':
-            for dataStructure in dataStructures:
+            for dataStructure in dataStructures: 
                 deleteDirContent(dataStructure)
 
             keyTime = {}
@@ -482,7 +493,7 @@ def myView(request):
 
         elif params[0] == 'EXPIRE':
             try:
-                if len(params) != 2:
+                if len(params) != 3:
                     mess = 'invalid input'
                     return badRequest(mess)
 
@@ -497,6 +508,8 @@ def myView(request):
                     mess = 'key not found'
                     return resourceNotFound(mess)
 
+                # save expire time of the key to keyExpire (by adding given seconds to 
+                # the time of setting expire time)
                 keyExpire[key] = time + timedelta(seconds=seconds)
 
                 context = {
@@ -518,10 +531,13 @@ def myView(request):
                 mess = 'this key does not have time out'
                 return resourceNotFound(mess)
 
-            timeout = keyExpire[key] 
+            timeout = keyExpire[key] # get when key get expired
             now = datetime.now()
-            existWithin = (timeout - now).total_seconds()
+            existWithin = (timeout - now).total_seconds() # find difference between expire time and current
+            # if the difference lesser than 0 this means key expired
             mess = existWithin
+            if existWithin <= 0:
+                mess = 'key expired'
 
             context = {
                 'message': mess,
@@ -533,9 +549,13 @@ def myView(request):
             keyTimePath = os.path.join(metadata, keyTimeName)
             keyExpirePath = os.path.join(metadata, keyExpireName)
 
+            # make deep copies of those hash tables so clients could sends SAVE 
+            # method as many as they wants
             keyTimeToFile = copy.deepcopy(keyTime)
             keyExpireToFile = copy.deepcopy(keyExpire)
 
+            # convert datetime object to string so system could save to
+            # text file as json
             for key in keyTimeToFile:
                 keyTimeToFile[key] = keyTimeToFile[key].strftime("%m %d %Y %H %M %S")
 
@@ -578,18 +598,19 @@ def checkFileExist(pathToFile):
     return os.path.isfile(pathToFile)
 
 def deleteDirContent(path, fileName=""):
-    if fileName == "":     
+    if fileName == "":  # delete all files in given path   
         dir = os.path.join(path, "*")  
         files = glob.glob(dir)
         for file in files:
             os.remove(file)
-    else:
+    else: # delete specific file in given path
         name = os.path.join(path, fileName)
         os.remove(name)
 
 def checkIfKeyExistInRAM(key, dic):
     return (key in dic)
 
+# loadMetadata load json from text file and return hash table
 def loadMetadata(fileName):
     expectDict = {}
     content = readData(fileName)
@@ -620,6 +641,7 @@ def readData(pathToFile):
 
     return data
 
+# writeData has 2 options is appending to existed file or overwritting to existed file (creating new file)
 def writeData(pathToFile, data, mode, key, time, appendToRAM = True):
     availableModes = ["a", "w"]
     try:
@@ -629,7 +651,7 @@ def writeData(pathToFile, data, mode, key, time, appendToRAM = True):
         data = fh.write(data)
         keyTime[key] = time
         fh.close()
-        if appendToRAM == False:
+        if appendToRAM == False: # if appendToRAM is False, system removes this key from keyTime
             del keyTime[key]
 
     except ValueError:

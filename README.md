@@ -5,6 +5,7 @@ pip install Django
 
 python manage.py runserver
 ```
+Open web browser and type http://127.0.0.1:8000/sayHello/
 
 ## commands
 

@@ -1,3 +1,6 @@
+# update
+I have change the implementation of FLUSH method from removing all key in keyTime and deleting all file in storage to removing all key in keyTime and do not deleting any file in storage. Because if file exist but not pass the check of exist in keyTime, it not process further so we do not worry about appending new data to existed file. And we could go back to previous snapshot
+
 # projects
 Type this line to terminal to start the server:
 ```

@@ -54,23 +54,39 @@ def myView(request):
     global keyExpire
     if request.method == 'POST':
         content = request.POST['content']
-        params = content.split(" ")
+        content = content.strip(" ")
+        contentRemoveSpaces = " ".join(content.split())
+        params = contentRemoveSpaces.split(" ")
         time = datetime.now()
+        # SET 
         if params[0] == 'SET':
-            key = params[1]
-            val = params[2]
+            try:
+                key = params[1]
+                startKey = content.find(key)
+                endKey = startKey + len(key)
+                val = content[endKey+1:]
+                if len(val) == 0:
+                    mess = 'value must not be empty'
+                    return badRequest(mess)
+                
+                val = "".join(val)
             
-            name = os.path.join(stringPath, "{}.txt".format(key))
-            data = "{}".format(val)
-            writeData(name, data, "w", key, time)
+                name = os.path.join(stringPath, "{}.txt".format(key))
+                data = "{}".format(val)
+                writeData(name, data, "w", key, time) 
 
-            if key in keyExpire:
-                del keyExpire[key]   
-
-            return render(request, 'set.html')
+                return render(request, 'set.html')
+            except Exception:
+                mess = 'key must not be blank'
+                return badRequest(mess)
 
         elif params[0] == 'GET':
             key = params[1]
+
+            if len(params) > 2:
+                mess = 'key must not contain space'
+                return badRequest(mess)
+
             keyExist = checkIfKeyExistInRAM(key, keyTime)
 
             if keyExist == False:
@@ -93,6 +109,11 @@ def myView(request):
 
         elif params[0] == 'LLEN':
             key = params[1]
+
+            if len(params) > 2:
+                mess = 'key must not contain space'
+                return badRequest(mess)
+
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             if keyExist == False:
                 mess = 'key not found'
@@ -113,9 +134,13 @@ def myView(request):
 
             return render(request, 'get.html', context)
 
-        elif params[0] == 'RPUSH': # handle case empty list
+        elif params[0] == 'RPUSH': 
             key = params[1]
             values = params[2:]
+            if len(values) == 0:
+                mess = 'value must not be empty'
+                return badRequest(mess)
+
             val = " ".join(values)
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             name = os.path.join(listPath, "{}.txt".format(key))
@@ -141,6 +166,10 @@ def myView(request):
 
         elif params[0] == 'LPOP':
             key = params[1]
+            if len(params) > 2:
+                mess = 'key must not contain space'
+                return badRequest(mess)
+
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             if keyExist == False:
                 mess = "key not found"
@@ -170,6 +199,10 @@ def myView(request):
 
         elif params[0] == 'RPOP':
             key = params[1]
+            if len(params) > 2:
+                mess = 'key must not contain space'
+                return badRequest(mess)
+
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             if keyExist == False:
                 mess = "key not found"
@@ -237,6 +270,10 @@ def myView(request):
         elif params[0] == 'SADD':
             key = params[1]
             values = params[2:]
+            if len(values) == 0:
+                mess = 'value must not be empty'
+                return badRequest(mess)
+
             val = set(values)
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             name = os.path.join(setPath, "{}.txt".format(key))
@@ -259,6 +296,10 @@ def myView(request):
     
         elif params[0] == 'SCARD':
             key = params[1]
+            if len(params) > 2:
+                mess = 'key must not contain space'
+                return badRequest(mess)
+
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             if keyExist == False:
                 mess = 'key not found'
@@ -280,6 +321,10 @@ def myView(request):
 
         elif params[0] == 'SMEMBERS':
             key = params[1]
+            if len(params) > 2:
+                mess = 'key must not contain space'
+                return badRequest(mess)
+
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             if keyExist == False:
                 mess = 'key not found'
@@ -396,6 +441,10 @@ def myView(request):
         
         elif params[0] == 'DEL':
             key = params[1]
+            if len(params) > 2:
+                mess = 'key must not contain space'
+                return badRequest(mess)
+
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             if keyExist == False:
                 mess = 'key not found'
@@ -432,6 +481,9 @@ def myView(request):
 
         elif params[0] == 'EXPIRE':
             try:
+                if len(params) != 2:
+                    mess = 'invalid input'
+                    return badRequest(mess)
                 key = params[1]
                 seconds = int(params[2])
                 if int(seconds) != seconds or seconds <= 0:
@@ -456,6 +508,10 @@ def myView(request):
 
         elif params[0] == 'TTL':
             key = params[1]
+            if len(params) > 2:
+                mess = 'key must not contain space'
+                return badRequest(mess)
+                
             if checkIfKeyExistInRAM(key, keyExpire) == False:
                 mess = 'this key does not have time out'
                 return resourceNotFound(mess)
@@ -510,6 +566,9 @@ def myView(request):
             }
 
             return render(request, 'get.html', context)
+        elif params[0] not in validCommand:
+            mess = 'invalid method'
+            return badRequest(mess)  
     else:
         return render(request, 'entry.html')
 

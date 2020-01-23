@@ -436,6 +436,10 @@ def myView(request):
             return render(request, 'get.html', context)
 
         elif params[0] == 'KEYS':
+            if len(params) != 1:
+                mess = 'invalid input'
+                return badRequest(mess)
+
             res = []
             for key in keyTime:
                 res.append(key)
@@ -479,6 +483,10 @@ def myView(request):
             return render(request, 'get.html', context)
 
         elif params[0] == 'FLUSHDB':
+            if len(params) != 1:
+                mess = 'invalid input'
+                return badRequest(mess)
+
             for dataStructure in dataStructures: 
                 deleteDirContent(dataStructure)
 
@@ -546,6 +554,10 @@ def myView(request):
             return render(request, 'get.html', context)
 
         elif params[0] == 'SAVE':
+            if len(params) != 1:
+                mess = 'invalid input'
+                return badRequest(mess)
+
             keyTimePath = os.path.join(metadata, keyTimeName)
             keyExpirePath = os.path.join(metadata, keyExpireName)
 
@@ -576,6 +588,10 @@ def myView(request):
             return render(request, 'get.html', context)
 
         elif params[0] == 'RESTORE':
+            if len(params) != 1:
+                mess = 'invalid input'
+                return badRequest(mess)
+                
             keyTimePath = os.path.join(metadata, keyTimeName)
             keyExpirePath = os.path.join(metadata, keyExpireName)
 

@@ -58,7 +58,7 @@ def myView(request):
         contentRemoveSpaces = " ".join(content.split())
         params = contentRemoveSpaces.split(" ")
         time = datetime.now()
-        # SET 
+
         if params[0] == 'SET':
             try:
                 key = params[1]
@@ -591,7 +591,7 @@ def myView(request):
             if len(params) != 1:
                 mess = 'invalid input'
                 return badRequest(mess)
-                
+
             keyTimePath = os.path.join(metadata, keyTimeName)
             keyExpirePath = os.path.join(metadata, keyExpireName)
 

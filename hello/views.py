@@ -440,6 +440,7 @@ def myView(request):
                 mess = 'invalid input'
                 return badRequest(mess)
 
+            # append all key of keyTime hash table to res list
             res = []
             for key in keyTime:
                 res.append(key)

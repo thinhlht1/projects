@@ -1,6 +1,8 @@
 # projects
 Type this line to terminal to start the server:
 ```
+pip install Django
+
 python manage.py runserver
 ```
 

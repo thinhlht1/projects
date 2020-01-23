@@ -488,9 +488,6 @@ def myView(request):
                 mess = 'invalid input'
                 return badRequest(mess)
 
-            for dataStructure in dataStructures: 
-                deleteDirContent(dataStructure)
-
             keyTime = {}
             mess = 'all keys deleted'
 

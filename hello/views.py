@@ -81,12 +81,11 @@ def myView(request):
                 return badRequest(mess)
 
         elif params[0] == 'GET':
-            key = params[1]
-
-            if len(params) > 2:
-                mess = 'key must not contain space'
+            if len(params) != 2:
+                mess = 'invalid input'
                 return badRequest(mess)
 
+            key = params[1]            
             keyExist = checkIfKeyExistInRAM(key, keyTime)
 
             if keyExist == False:
@@ -99,8 +98,7 @@ def myView(request):
                 return resourceNotFound(mess)
 
             data = readData(name)
-            mess = "".join(data)
-
+            mess = data
             context = {
                 'message': mess,
             }
@@ -108,12 +106,11 @@ def myView(request):
             return render(request, 'get.html', context)
 
         elif params[0] == 'LLEN':
-            key = params[1]
-
-            if len(params) > 2:
-                mess = 'key must not contain space'
+            if len(params) != 2:
+                mess = 'invalid input'
                 return badRequest(mess)
 
+            key = params[1]
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             if keyExist == False:
                 mess = 'key not found'
@@ -165,11 +162,11 @@ def myView(request):
             return render(request, 'get.html', context)
 
         elif params[0] == 'LPOP':
-            key = params[1]
-            if len(params) > 2:
-                mess = 'key must not contain space'
+            if len(params) != 2:
+                mess = 'invalid input'
                 return badRequest(mess)
 
+            key = params[1]
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             if keyExist == False:
                 mess = "key not found"
@@ -197,12 +194,12 @@ def myView(request):
 
             return render(request, 'get.html', context)
 
-        elif params[0] == 'RPOP':
-            key = params[1]
-            if len(params) > 2:
-                mess = 'key must not contain space'
+        elif params[0] == 'RPOP':            
+            if len(params) != 2:
+                mess = 'invalid input'
                 return badRequest(mess)
 
+            key = params[1]
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             if keyExist == False:
                 mess = "key not found"
@@ -232,6 +229,10 @@ def myView(request):
     
         elif params[0] == 'LRANGE':
             try:
+                if len(params) != 4:
+                    mess = "invalid parameters"
+                    return badRequest(mess)
+
                 key = params[1]
                 start, stop = int(params[2]), int(params[3])
                 if start > stop or start < 0 or stop < 0:
@@ -294,12 +295,12 @@ def myView(request):
 
             return render(request, 'get.html', context)
     
-        elif params[0] == 'SCARD':
-            key = params[1]
-            if len(params) > 2:
-                mess = 'key must not contain space'
+        elif params[0] == 'SCARD':            
+            if len(params) != 2:
+                mess = 'invalid input'
                 return badRequest(mess)
-
+            
+            key = params[1]
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             if keyExist == False:
                 mess = 'key not found'
@@ -319,12 +320,12 @@ def myView(request):
 
             return render(request, 'get.html', context)
 
-        elif params[0] == 'SMEMBERS':
-            key = params[1]
-            if len(params) > 2:
-                mess = 'key must not contain space'
+        elif params[0] == 'SMEMBERS':            
+            if len(params) != 2:
+                mess = 'invalid input'
                 return badRequest(mess)
 
+            key = params[1]
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             if keyExist == False:
                 mess = 'key not found'
@@ -439,12 +440,12 @@ def myView(request):
 
             return render(request, 'get.html', context)
         
-        elif params[0] == 'DEL':
-            key = params[1]
-            if len(params) > 2:
-                mess = 'key must not contain space'
+        elif params[0] == 'DEL':            
+            if len(params) != 2:
+                mess = 'invalid input'
                 return badRequest(mess)
 
+            key = params[1]
             keyExist = checkIfKeyExistInRAM(key, keyTime)
             if keyExist == False:
                 mess = 'key not found'
@@ -484,6 +485,7 @@ def myView(request):
                 if len(params) != 2:
                     mess = 'invalid input'
                     return badRequest(mess)
+
                 key = params[1]
                 seconds = int(params[2])
                 if int(seconds) != seconds or seconds <= 0:
@@ -508,7 +510,7 @@ def myView(request):
 
         elif params[0] == 'TTL':
             key = params[1]
-            if len(params) > 2:
+            if len(params) != 2:
                 mess = 'key must not contain space'
                 return badRequest(mess)
                 
